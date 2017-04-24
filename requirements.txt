@@ -1,0 +1,6 @@
+geopandas
+shapely
+tqdm
+numpy
+requests
+seaborn
