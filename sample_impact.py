@@ -2,16 +2,17 @@ import geopandas as gp
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
-from scipy.spatial import distance
-from scipy.stats import entropy
+import pyemd
 from shapely.geometry import Point
 import pylab as py
 
 from sample_api import time_sampler
 import plot_utils
 
+from multiprocessing import Pool
 import pickle
 import os
+import sys
 
 
 def _num_samples(dirname):
@@ -27,6 +28,7 @@ class LocationImpact(gp.GeoDataFrame):
 
     def __init__(self):
         self.borough_cdfs, self.boroughs = self._calc_borough_cdf()
+        self.geoid_distances = np.load("./data/geoid_sorted_distances.npy")
 
     def _calc_borough_cdf(self):
         borough_cdfs = {}
@@ -82,49 +84,55 @@ class LocationImpact(gp.GeoDataFrame):
         df_l = df_loc.query('exclude_l == False')
         df_nol = df_loc.query('exclude_l == True')
 
-        impact_cos = 1 - distance.cosine(
-            df_nol.transit_time,
-            df_l.transit_time
-        )
-        impact_kl = distance.cosine(
-            df_nol.transit_time,
-            df_l.transit_time
+        impact = pyemd.emd(
+            np.ascontiguousarray(df_nol.transit_time.values),
+            np.ascontiguousarray(df_l.transit_time.values),
+            self.geoid_distances
         )
         df_new = (df.drop(['transit_time', 'to_location', 'exclude_l'], axis=1)
                   .drop_duplicates())
-        df_new['impact_cos'] = 1 - impact_cos
-        df_new['impact_kl'] = impact_kl
-        return df_new
+        df_new['impact'] = impact
+        return df_new, df
 
 
-def sampler_exception_eater(f, N):
-    with tqdm(total=N, desc='Sampling') as pbar:
-        while N > 0:
-            try:
-                yield f()
-                N -= 1
-                pbar.update(1)
-            except Exception as e:
-                print('Ate exception while sampling: {}'.format(e))
-            except KeyboardInterrupt:
-                break
+def _exception_eater(f):
+    try:
+        return f()
+    except Exception as e:
+        print('Ate exception while sampling: {}'.format(e))
+    except KeyboardInterrupt:
+        raise
+    return None
+
+
+def multiprocess_sampler(f, N):
+    pool = Pool()
+    samples = pool.map(lambda *args, **kwargs: _exception_eater(f),
+                       tqdm(range(N)),
+                       chunksize=32)
+    return list(filter(None, samples))
 
 
 if __name__ == "__main__":
     sampler = LocationImpact()
 
-    df = pd.concat(list(sampler_exception_eater(
-        lambda: sampler.sample_impact(),
+    df = pd.concat(multiprocess_sampler(
+        lambda *args, **kwargs: sampler.sample_impact(),
         10000
-    )))
+    ))
     points = [Point(xy) for xy in zip(df.location_x, df.location_y)]
     crs = {'init': 'epsg:4326'}
     gdf = gp.GeoDataFrame(df, crs=crs, geometry=points)
 
-    py.clf()
-    plot_utils.plot_points(gdf, 'figures/impact_kl', (1024, 1024))
-    py.savefig("impact_kl.png", dpi=600)
+    for borough in (None, 'Brooklyn', 'Queens', 'Bronx',
+                    'Manhattan', 'Staten Island'):
+        print("Plotting for: " + (borough or 'nyc'))
+        if borough:
+            subset = gdf.query('borough == "{}"'.format(borough))
+        else:
+            subset = gdf
 
-    py.clf()
-    plot_utils.plot_points(gdf, 'figures/impact_cos', (1024, 1025))
-    py.savefig("impact_cos.png", dpi=600)
+        py.clf()
+        plot_utils.plot_points(subset, 'impact', (1024, 1024))
+        py.savefig("figures/impact_{}.png".format(borough or 'nyc'),
+                   dpi=600)
