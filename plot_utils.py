@@ -4,11 +4,15 @@ import geopandas as gp
 from sklearn.neighbors import KNeighborsRegressor
 
 
-def plot_points(data, field, bins=(100, 100), percentile=True):
-    knn = KNeighborsRegressor(n_neighbors=12, weights='distance')
+def plot_points(data, field, neighbors=12, bins=(100, 100), percentile=True,
+                log=False, cmap='OrRd'):
+    knn = KNeighborsRegressor(n_neighbors=neighbors, weights='distance')
     X, y = zip(*[((d.geometry.coords[0][1], d.geometry.coords[0][0]),
                   d[field])
                  for i, d in data.iterrows()])
+    if log:
+        y = np.nan_to_num(np.log(y))
+
     knn.fit(X, y)
 
     x0 = min(x[0] for x in X)
@@ -37,8 +41,8 @@ def plot_points(data, field, bins=(100, 100), percentile=True):
         if b in data_boroughs:
             color = 'white'
         (boroughs[boroughs.boroname == b]
-            .plot(color=color, alpha=0.5, ax=py.gca()))
-    py.pcolormesh(xx, yy, Z)
+            .plot(color=color, ax=py.gca()))
+    py.pcolormesh(xx, yy, Z, cmap=cmap)
     py.xlim(xx.min(), xx.max())
     py.ylim(yy.min(), yy.max())
     py.xticks(())
