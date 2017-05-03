@@ -4,14 +4,18 @@ import geopandas as gp
 from sklearn.neighbors import KNeighborsRegressor
 
 
-def plot_points(data, field, neighbors=12, bins=(100, 100), percentile=True,
-                log=False, cmap='OrRd'):
+def plot_points(data, field, neighbors=12, bins=(100, 100), percentile=False,
+                log=False, exp=False, cmap='OrRd'):
     knn = KNeighborsRegressor(n_neighbors=neighbors, weights='distance')
     X, y = zip(*[((d.geometry.coords[0][1], d.geometry.coords[0][0]),
                   d[field])
                  for i, d in data.iterrows()])
+    X = np.asarray(X)
+    y = np.asarray(y)
     if log:
-        y = np.nan_to_num(np.log(y))
+        y = np.nan_to_num(np.log1p(y + y.min()))
+    if exp:
+        y = np.nan_to_num(np.exp(y + y.min()))
 
     knn.fit(X, y)
 

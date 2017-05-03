@@ -26,8 +26,10 @@ def _num_samples(dirname):
     except IOError:
         return 0
 
+
 with open("./data/geoid_sorted_distances.npy", 'rb') as fd:
     geoid_distances = np.load(fd)
+
 
 class LocationImpact():
     borough_cdfs = {}
@@ -90,9 +92,14 @@ class LocationImpact():
         df_l = df_loc.query('exclude_l == False')
         df_nol = df_loc.query('exclude_l == True')
 
+        inv_transit_nol = 1.0 / df_nol.transit_time.values
+        inv_transit_nol[np.isinf(inv_transit_nol)] = 0
+        inv_transit_l = 1.0 / df_l.transit_time.values
+        inv_transit_l[np.isinf(inv_transit_l)] = 0
+
         impact = pyemd.emd(
-            np.ascontiguousarray(df_nol.transit_time.values),
-            np.ascontiguousarray(df_l.transit_time.values),
+            inv_transit_nol,
+            inv_transit_l,
             geoid_distances
         )
         df_new = (df.drop(['transit_time', 'to_location', 'exclude_l'], axis=1)
@@ -120,7 +127,6 @@ def multiprocess_sampler(f, N):
                        tqdm(samples, total=N)))
 
 
-
 if __name__ == "__main__":
     try:
         gdf = gp.read_file(sys.argv[1])
@@ -128,7 +134,7 @@ if __name__ == "__main__":
         sampler = LocationImpact()
         df = pd.concat(multiprocess_sampler(
             sampler.sample_impact,
-            10000
+            10000,
         ))
         points = [Point(xy) for xy in zip(df.location_x, df.location_y)]
         crs = {'init': 'epsg:4326'}
@@ -148,14 +154,27 @@ if __name__ == "__main__":
             subset = gdf.query('borough == "{}"'.format(borough))
         else:
             subset = gdf
+        borough = borough or 'NYC'
 
         py.clf()
-        plot_utils.plot_points(subset, 'impact', neighbors=64, bins=(1024, 1024), percentile=True)
-        py.savefig("figures/impact_{}_percentile.png".format(borough or 'nyc'),
+        gdf.impact.plot('hist', bins=25)
+        py.gca().set_yscale("log", nonposx='clip')
+        py.savefig("figures/impact_{}_hist.png".format(borough))
+
+        py.clf()
+        plot_utils.plot_points(subset, 'impact', neighbors=32,
+                               bins=(1024, 1024), percentile=True)
+        py.savefig("figures/impact_{}_percentile.png".format(borough),
                    dpi=600)
 
         py.clf()
-        plot_utils.plot_points(subset, 'impact', neighbors=64, bins=(1024, 1024),
-                               percentile=False, log=True)
-        py.savefig("figures/impact_{}_log.png".format(borough or 'nyc'),
+        plot_utils.plot_points(subset, 'impact', neighbors=32,
+                               bins=(1024, 1024), exp=True)
+        py.savefig("figures/impact_{}_exp.png".format(borough),
+                   dpi=600)
+
+        py.clf()
+        plot_utils.plot_points(subset, 'impact', neighbors=32,
+                               bins=(1024, 1024))
+        py.savefig("figures/impact_{}.png".format(borough),
                    dpi=600)
