@@ -1,6 +1,7 @@
 import pandas as pd
 import datetime
 
+# http://web.mta.info/developers/data/nyct/turnstile/turnstile_170401.txt
 turnstiles = pd.read_csv('./data/turnstile_170401.txt')
 
 # fix column name
