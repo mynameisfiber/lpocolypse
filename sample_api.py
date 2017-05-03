@@ -32,18 +32,8 @@ def travel_vector(source, departure_time, exclude_stops):
     return df
 
 
-# hour_cdf gotten by looking at turnstile data from the MTA for april 3rd-9th.
-hour_cdf = [0.031159591265737956, 0.049744326191976912,
-            0.068914506276546231, 0.072767623085696648, 0.078045203229668278,
-            0.081690114399689664, 0.08783637958779543, 0.1208384005365527,
-            0.15669585761409446, 0.21136422660372567, 0.27236733690341774,
-            0.29470539480076419, 0.36218795122116976, 0.40958770181321114,
-            0.45478043917290556, 0.48015848041574349, 0.54033666454040274,
-            0.60340602334297699, 0.69267813028881231, 0.76368339736116475,
-            0.84983014853956684, 0.91438754766651298, 0.97678648730289552, 1.0]
-
 def time_sampler():
-    hour = np.searchsorted(hour_cdf, np.random.random())
+    hour = np.searchsorted(hour_cdf.cdf, np.random.random())
     halfhour = 30 * (np.random.random() > 0.5)
     return "{:02d}:{:02d}:00".format(hour, halfhour)
 
