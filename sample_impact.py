@@ -92,6 +92,7 @@ class LocationImpact():
         df_l = df_loc.query('exclude_l == False')
         df_nol = df_loc.query('exclude_l == True')
 
+        np.seterr(divide='ignore')
         inv_transit_nol = 1.0 / df_nol.transit_time.values
         inv_transit_nol[np.isinf(inv_transit_nol)] = 0
         inv_transit_l = 1.0 / df_l.transit_time.values
