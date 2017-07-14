@@ -163,19 +163,26 @@ if __name__ == "__main__":
         py.savefig("figures/impact_{}_hist.png".format(borough))
 
         py.clf()
-        plot_utils.plot_points(subset, 'impact', neighbors=32,
-                               bins=(1024, 1024), percentile=True)
+        d = plot_utils.plot_points(subset, 'impact', neighbors=32,
+                                   bins=(1024, 1024), percentile=True)
+        with open("figures/impact_{}_percentile.pkl".format(borough), 'wb+') \
+                as fd:
+            pickle.dump(d, fd)
         py.savefig("figures/impact_{}_percentile.png".format(borough),
                    dpi=600)
 
         py.clf()
-        plot_utils.plot_points(subset, 'impact', neighbors=32,
-                               bins=(1024, 1024), exp=True)
+        d = plot_utils.plot_points(subset, 'impact', neighbors=32,
+                                   bins=(1024, 1024), exp=True)
+        with open("figures/impact_{}_exp.pkl".format(borough), 'wb+') as fd:
+            pickle.dump(d, fd)
         py.savefig("figures/impact_{}_exp.png".format(borough),
                    dpi=600)
 
         py.clf()
-        plot_utils.plot_points(subset, 'impact', neighbors=32,
-                               bins=(1024, 1024))
+        d = plot_utils.plot_points(subset, 'impact', neighbors=32,
+                                   bins=(1024, 1024))
+        with open("figures/impact_{}_impact.pkl".format(borough), 'wb+') as fd:
+            pickle.dump(d, fd)
         py.savefig("figures/impact_{}.png".format(borough),
                    dpi=600)

@@ -4,6 +4,12 @@ import geopandas as gp
 from sklearn.neighbors import KNeighborsRegressor
 
 
+boroughs_file = ("./data/borough_shape/"
+                 "geo_export_258deaa6-18f5-4fed-9165-69cd6eafca74.shp")
+boroughs = gp.read_file(boroughs_file)
+subway = gp.read_file("./data/subway_shape/nyctsubwayroutes_100627.shp")
+
+
 def plot_points(data, field, neighbors=12, bins=(100, 100), percentile=False,
                 log=False, exp=False, cmap='OrRd'):
     knn = KNeighborsRegressor(n_neighbors=neighbors, weights='distance')
@@ -33,11 +39,6 @@ def plot_points(data, field, neighbors=12, bins=(100, 100), percentile=False,
         Z *= 100.0 / Z.max()
     Z = Z.reshape(xx.shape)
 
-    boroughs_file = ("./data/borough_shape/"
-                     "geo_export_258deaa6-18f5-4fed-9165-69cd6eafca74.shp")
-    boroughs = gp.read_file(boroughs_file)
-    subway = gp.read_file("./data/subway_shape/nyctsubwayroutes_100627.shp")
-
     data_boroughs = data.borough.unique()
     all_boroughs = boroughs.boroname.unique()
     for b in all_boroughs:
@@ -54,3 +55,4 @@ def plot_points(data, field, neighbors=12, bins=(100, 100), percentile=False,
     py.colorbar()
     py.tight_layout()
     subway.plot(ax=py.gca())
+    return (xx, yy, Z)
