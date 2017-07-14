@@ -1,46 +1,41 @@
-# LPocolypse
+# LPocalypse
 
-If you live in NYC, then you know it's going to happen: the L is going to be
-shut down for 15 months. While the investment into the city's infrastructure is
-universally accepted as good, not having this critical vein for public transport
-is having many people groaning.
+If you live in NYC, you've certainly been hearing about the MTA this summer. From derailments in Harlem to signal problems in Herald Square, trains have been running hot, slow, and crowded, when they're running at all. Added to this is the one thing all New Yorkers know is going to happen: the L is going to be shut down for 15 months. While this investment into the city's infrastructure is universally accepted as good, not having this critical vein for public transport has many people groaning. In many ways, the shutdown of the L will be a bit of a test case for when subsequent lines go down for maintenance in years to come.
 
-Some people, however, think that Williamsburg will be the only area hit by this
-closure. In this analysis, we question that conclusion and look at how travel
-times around the city will be affected.
+When it comes to lines closing for a period of months or years, most people think that only the neighborhoods that a line runs through will be affected. For the L train, it is thought that Williamsburg will be the main area hit by the closure. In this analysis, we question that conclusion and look at how travel times around the city will be affected by the closure of a single line and how closing even a single line can affect residents of far-flung neighborhoods.
 
 
 ## Methodology
 
-There are already [maps](http://transit.sidewalklabs.com) that show you how
+There are already [maps](http://transit.sidewalklabs.com) that show how
 transit times _from a particular point_ will be affected by the L shutdown.
-However, we are curious what the disparate impact of these transit time
+However, we are curious what the disparate impacts are of these transit time
 differences.
 
 In order to do this, we sample locations within the five boroughs and also
 sample a time of day that is characteristic for train usage (as given by the MTA
 turnstile data). Given these two pieces of information, we calculate the transit
 times from that point to all other points in the boroughs with and without the
-L. The transit times we use include transits and buses and, since this is New
+L. The transit times we use include transfers and buses and, since this is New
 York, a maximum walking distance of 2.5 miles.
 
 From this, we'd like to see what the impact of the train shutdown is for that
 sampled location. One piece of information we _don't_ have is where people are
 traveling to from that source location. We instead make the assumption that
-people go to places that are quick to get to from their location. Under this
-assumption, the inverse travel time to a location correlate with the probability
+people go to places that are reasonably quick to get to from their location [but they don't generally ride the subway <3 stops... they go a middle distance]. Under this
+assumption, the inverse travel time to a location correlates with the probability
 of a person traveling there.
 
 Now, we have two maps that correlate to where people will likely go with the L
-up and running and the L shut down. In order to distil this into a number
+up-and-running and with the L shut down. In order to distil this into a number
 representing the impact of the shutdown, we calculate the earth movers distance
-between the two maps using the physical distances between points. 
+between the two maps using the physical distances between points.
 
 This earth movers distance can be thought of as how much effort it would take to
 "move" travel preferences around the physical map from what it looks like with
-the L versus without the L.Using the physical distances between the points makes
+the L versus without the L. Using the physical distances between the points makes
 it so that even if your travel time to 14th and 1st goes up, faster travel time
-to Union Square can compensate but travel times to Cony Island don't.
+to Union Square can compensate but travel times to Coney Island don't.
 
 
 
