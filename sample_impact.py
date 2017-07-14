@@ -182,7 +182,7 @@ if __name__ == "__main__":
         py.clf()
         d = plot_utils.plot_points(subset, 'impact', neighbors=32,
                                    bins=(1024, 1024))
-        with open("figures/impact_{}_impact.pkl".format(borough), 'wb+') as fd:
+        with open("figures/impact_{}.pkl".format(borough), 'wb+') as fd:
             pickle.dump(d, fd)
         py.savefig("figures/impact_{}.png".format(borough),
                    dpi=600)
